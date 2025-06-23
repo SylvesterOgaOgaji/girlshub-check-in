@@ -1,0 +1,47 @@
+        name: Deploy to Firebase
+
+        on:
+          push:
+            branches: [ main ] # Trigger on push to the main branch
+
+        jobs:
+          build_and_deploy:
+            runs-on: ubuntu-latest # Use Ubuntu latest runner
+            steps:
+              - name: Checkout Code
+                uses: actions/checkout@v3 # Checks out your repository
+
+              - name: Install Node.js
+                uses: actions/setup-node@v3
+                with:
+                  node-version: 18 # Use Node.js version 18
+
+              - name: Install Client Dependencies
+                run: |
+                  cd client
+                  npm ci # Installs dependencies from package-lock.json
+
+              - name: Build Client Application
+                run: |
+                  cd client
+                  npm run build # Builds the React frontend
+
+              - name: Install Functions Dependencies
+                run: |
+                  cd functions
+                  npm ci # Installs dependencies for Cloud Functions
+
+              - name: Build Functions
+                run: |
+                  cd functions
+                  npm run build # Compiles TypeScript functions to JavaScript
+
+              - name: Deploy to Firebase
+                uses: FirebaseExtended/action-hosting-deploy@v0
+                with:
+                  repoToken: '${{ secrets.GITHUB_TOKEN }}' # GitHub automatically provides this token
+                  firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_GIRLSHUB_CHECK_IN }}' # Replace with your service account secret name
+                  projectId: your-firebase-project-id # Replace with your Firebase Project ID
+                  channelId: live # Deploys to the live channel
+                  # target: your-hosting-target-name # Uncomment and specify if you have multiple hosting sites
+        
